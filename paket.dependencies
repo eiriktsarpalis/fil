@@ -1,0 +1,5 @@
+framework: net45
+source https://api.nuget.org/v3/index.json
+
+nuget FSharp.Core >= 4.0.0
+nuget NUnit 2.6.2 restriction: >= net40
