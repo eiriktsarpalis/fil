@@ -14,7 +14,7 @@ let test (methodInfo:MethodInfo) =
         | Some(Lambda(unit,expr)) -> expr
         | Some(_) -> failwith "expecting lambda"
         | None -> invalidOp "expecting reflected definition"
-    let f = CompileUntyped(expr, methodInfo.ReturnType)
+    let f = CompileUntyped(expr)
     let expected = methodInfo.Invoke(null, [||])
     let actual = f ()
     Assert.AreEqual(expected, actual)

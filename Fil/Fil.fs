@@ -16,18 +16,19 @@ type Microsoft.FSharp.Reflection.FSharpType with
         FSharpType.MakeUnion(name, cases)
 
 open FSharpFun
+open System
 open System.Reflection.Emit
 open Microsoft.FSharp.Quotations
 
 type internal Marker = interface end
-let CompileUntyped (quotation:Expr, returnType) =
-    let f = DynamicMethod("f", returnType, [||], typeof<Marker>.Module)
-    let il = f.GetILGenerator()
+let Compile (quotation:Expr<'T>) =
+    let dyn = DynamicMethod("f", typeof<'T>, [||], typeof<Marker>.Module, skipVisibility = true)
+    let il = dyn.GetILGenerator()
     quotation |> generate [] il
-    il.Emit(OpCodes.Ret)
-    fun () -> f.Invoke(null,[||])
+    il.Emit OpCodes.Ret
+    let func = dyn.CreateDelegate(typeof<Func<'T>>) :?> Func<'T>
+    func.Invoke
 
-let Compile (quotation:Expr<'TReturnValue>) =
-    let returnType = typeof<'TReturnValue>
-    let f = CompileUntyped(quotation, returnType)
-    fun () -> f () :?> 'TReturnValue
+let CompileUntyped (quotation:Expr) =
+    let expr = Expr.Cast<obj>(Expr.Coerce(quotation, typeof<obj>))
+    Compile expr
